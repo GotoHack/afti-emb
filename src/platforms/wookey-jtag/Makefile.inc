@@ -3,15 +3,13 @@ CC = $(CROSS_COMPILE)gcc
 OBJCOPY = $(CROSS_COMPILE)objcopy
 
 CFLAGS += -Istm32/include -mcpu=cortex-m3 -mthumb \
-	-DSTM32F1 -DBLACKMAGIC -I../libopencm3/include \
+	-DSTM32F1 -I../libopencm3/include \
 	-Iplatforms/stm32
 
-LDFLAGS_BOOT := $(LDFLAGS) --specs=nano.specs -lopencm3_stm32f1 \
-	-Wl,-T,platforms/wookey-jtag/wookey-jtag.ld -nostartfiles -lc \
+LDFLAGS :=  $(LDFLAGS) --specs=nano.specs -lopencm3_stm32f1 \
+	-Wl,-T,platforms/wookey-jtag/wookey.ld -nostartfiles -lc \
 	-Wl,-Map=mapfile -mthumb -mcpu=cortex-m3 -Wl,-gc-sections \
 	-L../libopencm3/lib
-
-LDFLAGS = $(LDFLAGS_BOOT)
 
 ifeq ($(ENABLE_DEBUG), 1)
 LDFLAGS += --specs=rdimon.specs
