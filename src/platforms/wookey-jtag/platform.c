@@ -103,7 +103,6 @@ void platform_init(void)
 	rcc_clock_setup_in_hse_8mhz_out_72mhz();
 
 	/* Enable peripherals */
-	rcc_periph_clock_enable(RCC_USB);
 	rcc_periph_clock_enable(RCC_GPIOA);
 	rcc_periph_clock_enable(RCC_GPIOB);
 	rcc_periph_clock_enable(RCC_GPIOC);
@@ -184,9 +183,10 @@ void platform_init(void)
 	SCB_VTOR = (uint32_t)&vector_table;
 
 	platform_timing_init();
+	//usbuart_init();
 	cdcacm_init();
 
-	usbuart_init();
+
 #if 0
 	setup_vbus_irq();
 #endif
