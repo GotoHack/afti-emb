@@ -191,7 +191,7 @@ void platform_init(void)
 	SCB_VTOR = (uint32_t)&vector_table;
 
 	platform_timing_init();
-	//usbuart_init();
+	usbuart_init();
 	cdcacm_init();
 
 

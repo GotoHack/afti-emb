@@ -133,6 +133,7 @@
 #define UART_PIN_SETUP() do { \
 	gpio_set_mode(USBUSART_PORT, GPIO_MODE_OUTPUT_2_MHZ, \
 	              GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, USBUSART_TX_PIN); \
+    gpio_primary_remap(0x0, 0x4); \
 } while(0)
 
 #define USB_DRIVER stm32f107_usb_driver
