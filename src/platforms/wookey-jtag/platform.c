@@ -27,6 +27,10 @@
 #include "usbuart.h"
 #include "morse.h"
 
+#ifdef LIBOPENCM3_GPIO_H
+#undef  LIBOPENCM3_GPIO_H
+#endif
+#include <libopencm3/stm32/f1/gpio.h>
 #include <libopencm3/stm32/f1/rcc.h>
 #include <libopencm3/cm3/scb.h>
 #include <libopencm3/cm3/scs.h>
@@ -107,7 +111,11 @@ void platform_init(void)
 	rcc_periph_clock_enable(RCC_GPIOB);
 	rcc_periph_clock_enable(RCC_GPIOC);
 	rcc_periph_clock_enable(RCC_AFIO);
-    rcc_periph_clock_enable(RCC_CRC);
+        rcc_periph_clock_enable(RCC_CRC);
+//GPIO_CNF_OUTPUT_ALTFN_OPENDRAIN
+
+        gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL,GPIO11 | GPIO12);
+       // gpio_set_af(GPIOA, GPIO_AF10, GPIO11 | GPIO12);
 
 #if 0
 	/* Setup GPIO ports */
