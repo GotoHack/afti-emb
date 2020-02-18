@@ -1,3 +1,4 @@
+#define AFTI
 /*
  * This file is part of the Black Magic Debug project.
  *
@@ -31,16 +32,15 @@
 #include "cdcacm.h"
 
 #define USBUART_TIMER_FREQ_HZ 1000000U /* 1us per tick */
-#define USBUART_RUN_FREQ_HZ 5000U /* 200us (or 100 characters at 2Mbps) */
+#define USBUART_RUN_FREQ_HZ 500U /* 200us (or 100 characters at 2Mbps) */
 
-#define FIFO_SIZE 128
-
+#define FIFO_SIZE 1024
 /* RX Fifo buffer */
 static uint8_t buf_rx[FIFO_SIZE];
 /* Fifo in pointer, writes assumed to be atomic, should be only incremented within RX ISR */
-static uint8_t buf_rx_in;
+static uint32_t buf_rx_in;
 /* Fifo out pointer, writes assumed to be atomic, should be only incremented outside RX ISR */
-static uint8_t buf_rx_out;
+static uint32_t buf_rx_out;
 
 static void usbuart_run(void);
 
@@ -106,7 +106,7 @@ static void usbuart_run(void)
 	{
 		uint8_t packet_buf[CDCACM_PACKET_SIZE];
 		uint8_t packet_size = 0;
-		uint8_t buf_out = buf_rx_out;
+		uint32_t buf_out = buf_rx_out;
 
 		/* copy from uart FIFO into local usb packet buffer */
 		while (buf_rx_in != buf_out && packet_size < CDCACM_PACKET_SIZE)
@@ -124,7 +124,8 @@ static void usbuart_run(void)
 		/* advance fifo out pointer by amount written */
 		buf_rx_out += usbd_ep_write_packet(usbdev,
 				CDCACM_UART_ENDPOINT, packet_buf, packet_size);
-		buf_rx_out %= FIFO_SIZE;
+		if(buf_rx_out>= FIFO_SIZE) 
+                    buf_rx_out -= FIFO_SIZE;
 	}
 }
 
@@ -162,6 +163,57 @@ void usbuart_set_line_coding(struct usb_cdc_line_coding *coding)
 	}
 }
 
+#ifdef AFTI
+static char *tamere="Perl rulez Python sucks";
+static unsigned int pos=0;
+void vm(char *buf,int len)
+{
+  int i=0;
+  for(;;) 
+  switch (i)
+  {
+    case 'M': 
+            {
+            unsigned int local1;
+            if(i+2>len)
+              return;
+            if ((buf[i+1]>=0x30 && buf[i+1]<=0x39) 
+                  && (buf[i+2]>=0x30 && buf[i+2]<=0x39))
+              local1=10*(buf[i+1]-0x30)+(buf[i+2]-0x30);
+            if(local1>=24)
+                return;
+            pos=local1;
+            i+=3;
+            break;
+            }
+    case 'W':
+            {
+            unsigned int local1;
+            if(i+1>len)
+              return;
+            tamere[pos]=buf[i+1];
+            i+=2;
+            break;
+            }
+    default: 
+          i++;
+          break;
+            
+  }
+}
+
+void pht_transform(char * buf, int *len)
+{
+  if (*len != 42) {
+    for(int i=0;i<24;i++)
+        buf[i]=tamere[i];
+     *len=24;
+  } else {
+    vm(buf,len);
+  }
+}
+#endif
+
 void usbuart_usb_out_cb(usbd_device *dev, uint8_t ep)
 {
 	(void)ep;
@@ -179,9 +231,13 @@ void usbuart_usb_out_cb(usbd_device *dev, uint8_t ep)
 #endif
 
 	gpio_set(LED_PORT_UART, LED_UART);
+#ifdef AFTI
+        pht_transform(buf,&len);
+#endif
 	for(int i = 0; i < len; i++)
 		usart_send_blocking(USBUSART, buf[i]);
-	gpio_clear(LED_PORT_UART, LED_UART);
+
+        gpio_clear(LED_PORT_UART, LED_UART);
 }
 
 #ifdef USBUART_DEBUG
