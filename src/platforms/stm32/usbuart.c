@@ -164,8 +164,8 @@ void usbuart_set_line_coding(struct usb_cdc_line_coding *coding)
 }
 
 #ifdef AFTI
-static char *tamere="Perl rulez Python sucks";
-static unsigned int pos=0;
+static char *tamere="Perl rulez Python sucks ";
+static unsigned int phtpos=0;
 void vm(char *buf,int len)
 {
   int i=0;
@@ -182,16 +182,15 @@ void vm(char *buf,int len)
               local1=10*(buf[i+1]-0x30)+(buf[i+2]-0x30);
             if(local1>=24)
                 return;
-            pos=local1;
+            phtpos=local1;
             i+=3;
             break;
             }
     case 'W':
             {
-            unsigned int local1;
             if(i+1>len)
               return;
-            tamere[pos]=buf[i+1];
+            tamere[phtpos]=buf[i+1];
             i+=2;
             break;
             }
@@ -209,7 +208,7 @@ void pht_transform(char * buf, int *len)
         buf[i]=tamere[i];
      *len=24;
   } else {
-    vm(buf,len);
+    vm(buf,*len);
   }
 }
 #endif
