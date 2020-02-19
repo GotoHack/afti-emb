@@ -1,0 +1,11 @@
+make PROBE_HOST=wookey-jtag  CROSS_COMPILE=arm-none-eabi- -j8
+openocd -f stm32discovery1.cfg
+telnet localhost 4444
+  reset halt
+  flash write_image erase src/blackmagic
+
+apres on screen /dev/ttyACM2 115200
+screen /dev/ttyACM0 115200
+
+et on peut commencer a jouer
+
